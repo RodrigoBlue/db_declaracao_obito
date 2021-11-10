@@ -1,0 +1,213 @@
+-- Procedure que consulta informações de todos os médicos cadastrados no banco com base no seu número de CRM e traz os respectivos números das declarações de óbito que cada um preencheu.
+
+create procedure BuscarMedico(numero int)
+select m.crm CRM,
+m.nome_medico as 'Nome do Medico',
+m.assinatura as 'Assinatura',
+m.data_atestado as 'Data de Atestado',
+c.telefone as 'Numero do Celular',
+c.telefone_Res as 'Telefone residencial',
+c.email as 'Email',
+a.sim as 'Atendimento ao Falecido?',
+a.substituto as 'Atendimento ao Falecido?',
+d.numero_Do as 'Do Preenchida',
+f.nome_falecido as 'Nome do Falecido'
+from medico m
+join contato c
+on m.crm = c.fk_crm
+join atendimento_falecido a
+on m.crm = a.fk_crm
+join medico_do md
+on m.crm = md.fk_crm
+join doo d
+on d.numero_do = md.fk_numero_Do
+join identificacao f
+on f.fk_numero_Do = d.numero_Do
+where m.crm = numero;
+
+call buscarmedico(1000)
+
+-- CRMS Disponíveis para consulta
+1000
+1001
+1002
+
+-- Procedure que traz todas informações relacionadas aos falecidos consultando pelo número do RIC ou pelo número da Declaração de óbito.
+
+create procedure infofalecido(numero int)
+SELECT d.numero_do 'Numero Do',
+F.ric 'Numero Ric',
+F.NOME_FALECIDO 'Nome Falecido',
+F.DATA_NASC 'Data de Nascimento',
+F.NOME_MAE 'Nome da Mãe',
+F.NOME_PAI 'Nome do Pai',
+N.MUNICIPIO 'Municipio Natural',
+N.UF,
+e.cod_Estado_civil 'Codigo Estado Civil',
+e.solteiro 'Solteiro',
+e.casado 'Casado',
+e.separado_judicial 'Separado Judicialmente',
+e.uniao_estavel 'União Estável',
+e.ignorado 'Ignorado',
+I.ANOS_COMPLETO 'Idade',
+i.ate_um_ano 'Idade ate um ano',
+s.cod_sexo 'Codigo Sexo',
+S.MASCULINO,
+S.FEMININO,
+R.branco 'Cor Branca',
+r.parda 'Cor Parda',
+r.preta 'Cor Preta',
+r.amarela 'Cor amarela',
+r.indigena 'Cor Indigena',
+Es.oito_Onze 'Nivel escolar',
+es.doze_mais 'Nivel escolar',
+es.ignorado 'Nivel escolar',
+OP.OCUPACAO_HABITUAL 'Ocupação Habitual',
+rd.cod_residencia 'Codigo de Residencia',
+ms.nome_municipio 'Municipio da Residencia',
+ms.uf UF,
+ms.codigo_municipio 'Codigo Municipio',
+ld.nome_endr 'Nome do Endereço',
+ld.numero 'Numero do Endereço',
+ld.complemento 'Complemento',
+ld.cep 'Numero do CEP'
+FROM doo d
+join identificacao f
+on d.numero_do = f.fk_numero_Do
+JOIN NATURALIDADE N
+ON F.RIC = N.RIC
+JOIN ESTADO_CIVIL E
+ON F.RIC = E.RIC
+JOIN IDADE I
+ON F.RIC = I.RIC
+JOIN SEXO S
+ON F.RIC = S.RIC
+JOIN ESCOLARIDADE ES
+ON F.RIC = ES.RIC
+JOIN OCUPACAO OP
+ON F.RIC = OP.RIC
+JOIN RACA_COR R
+ON F.RIC = R.RIC
+join residencia rd
+on f.ric = rd.ric
+join municipio_res ms
+on rd.cod_Residencia = ms.cod_residencia
+join logradouro ld
+on rd.cod_residencia = ld.cod_residencia
+where f.ric = numero or f.fk_numero_Do = numero;
+
+call infofalecido(12702301);
+
+-- Números de RIC disponíveis para consulta
+12702301
+20343859
+65108579
+95414578
+
+-- Números de DO disponiveis para consulta
+70020
+70021
+70022
+70023
+
+-- Procedure que traz informações da Do consultada pelo número da Do e do cartório onde o falecido foi registrado seu respectivo nome e informações do medico que preencheu a Do.
+
+create procedure BuscarDO(NUMERO INT)
+select d.numero_do as 'Numero DO',
+c.nome_cartorio as 'Nome Cartorio',
+c.nome_cemiterio as 'Nome Cemiteiro',
+f.ric Ric,
+f.nome_falecido as 'Nome do falecido',
+f.nome_mae as 'Nome da mãe',
+f.nome_Pai as 'Nome do pai',
+f.data_nasc as 'Data de Nascimento',
+m.nome_Medico 'Nome Medico',
+m.assinatura as 'Assinatura do Medico',
+m.crm as CRM
+from doo d
+join cartorio_Do cd
+on cd.fk_numero_do = d.numero_Do
+join cartorio c
+on c.cod_cartorio = cd.fk_cod_cartorio
+join identificacao f
+on f.fk_numero_Do = d.numero_Do
+join medico_do md
+on d.numero_do = md.fk_numero_DO
+join medico m
+on m.crm = md.fk_crm
+WHERE D.NUMERO_DO = NUMERO;
+
+call buscardo(70023);
+
+
+-- Procedure que traz informações relacionadas aos obitos em mulheres, consultada pelo Numero da Do, trazendo todas informações relevantes para a identificação da pessoa e as causas do seu óbito.
+
+create procedure InfoMulher(numero int)
+select dd.numero_Do as 'Numero DO',
+f.ric RIC,
+f.nome_falecido as 'Nome Falecido',
+f.data_nasc as 'Data de Nascimento',
+s.masculino 'Masculino',
+s.feminino 'Feminino',
+n.municipio 'Municipio Natural',
+n.uf Uf,
+l.id_local_ocorrencia 'Id Ocorrencia',
+l.hospital Hospital,
+l.outro_Estb_saude 'Outro Estabelecimento de saude',
+l.domicilio Domicilio,
+l.via_publica 'Via Pública',
+o.cod_obito as 'Codigo Óbito',
+cm.campo_a as 'Campo A',cm.campo_b as 'Campo B',cm.campo_c as 'Campo C',cm.campo_d as 'Campo D',
+g.sim aS 'Morte Gravidez, Parto, Aborto?',
+dgt.*,
+tg.unica AS 'Tipo de Gravidez',tg.dupla as 'Tipo de Gravidez',tg.tripla_mais as 'Tipo de Gravidez',
+tp.vaginal as 'Tipo de Parto',
+tp.cesareo as 'Tipo de Parto',
+tp.ignorado as 'Tipo de Parto',
+op.ocupacao_habitual as 'Ocupação Habitual',
+fe.id_Feto 'Id do Rescem Nascido',
+fe.peso_nasc as 'Peso ao Nascer',
+fe.numero_dn as 'Numero Declaração de Nascido'
+from doo dd
+join identificacao f
+on dd.numero_do = f.fk_numero_Do
+join sexo s
+on f.ric = s.ric
+join naturalidade n
+on f.ric = n.ric
+join ocorrencia oc
+on f.ric = oc.ric
+join local_ocorrencia l
+on oc.cod_ocorrencia = l.cod_ocorrencia
+join obito o
+on f.ric = o.ric
+join condi_causa_obito ca
+on o.cod_obito = ca.cod_obito
+join diagnostico d
+on ca.cod_cco = d.cod_cco
+join causa_morte_parte1 cm
+on d.cod_Dg = cm.cod_Dg
+join obito_mulher om
+on ca.cod_cco = om.cod_cco
+join morte_gpa g
+on om.cod_mg = g.cod_mg
+join obito_fetal_menor_um_ano ofm
+on o.cod_obito = ofm.cod_obito
+join informacoes_mae im
+on ofm.cod_fetal_menor = im.cod_fetal_menor
+join duracao_gestacao dgt
+on im.cod_mae = dgt.cod_mae
+join tipo_gravidez tg
+on im.cod_mae = tg.cod_mae
+join tipo_parto tp
+on im.cod_mae = tp.cod_mae
+join ocupacao_mae op
+on im.cod_mae = op.cod_mae
+join feto fe
+on im.cod_mae = fe.cod_mae
+where dd.numero_Do = numero;
+
+call infomulher(70022);
+
+-- Numero da Do disponivel para consulta
+70022

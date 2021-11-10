@@ -1,0 +1,27 @@
+/*com permissão de acesso local e de qualquer outro local,
+estabelecer privilégios entre eles de selecionar, inserir, criar, atualizar, deletar. */
+
+-- olhar tipos de usuario
+select user, host from mysql.user;
+flush privileges;
+-- criar usuarios
+create user Ane identified by '123456';
+create user Mychael identified by '9090';
+create user Rodrigo identified by '9090';
+create user Pirulito identified by '9090';
+create user leo@localhost identified by '9090';
+create user Daniel@localhost identified by '9090';
+create user Romeu@localhost identified by '9090';
+create user karen@localhost identified by '9090';
+-- estabelecer privilegios
+grant select, insert, create, update, delete on declaracao_obito.* to Ane, Mychael, Rodrigo, Pirulito,
+leo@localhost, Daniel@localhost, Romeu@localhost, karen@localhost ; -- declaracao_obito é o nome do banco de dados
+-- mostrar os privilegios
+show grants for 'Ane';
+show grants for Mychael;
+show grants for Rodrigo;
+show grants for Pirulito;
+show grants for leo@localhost;
+show grants for Daniel@localhost;
+show grants for Romeu@localhost;
+show grants for karen@localhost;
